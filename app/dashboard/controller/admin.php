@@ -49,11 +49,14 @@ class Admin extends BaseController
     }
 
     $token = Jwt::generate(['id' => $admin['id']]);
-
     unset($admin['id']);
+
+    $menuList = Db::name('admin_menu')->order('order')->select()->toArray();
+    
     $this->success('', [
       'token' => $token,
       'info'  => $admin,
+      'menu'  => arrayToTree($menuList),
     ]);
   }
 

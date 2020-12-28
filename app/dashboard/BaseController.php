@@ -82,6 +82,10 @@ abstract class BaseController
 
     $now = time();
 
+    if (!isset($this->token['exp']) || !isset($this->token['data'])) {
+      return;
+    }
+
     if ($now > $this->token['exp']->getTimestamp()) {
       return;
     }

@@ -26,12 +26,6 @@ class Auth extends BaseController
     if (isset($param['num'])) {
       $num = $param['num'];
     }
-
-    $subQuery = Db::name('role_admin')
-      ->where('admin_id', 'a.id')
-      // ->column('role_id')
-      ->fetchSql(true)
-      ->value('role_id');
     
     $list = Db::name('admin')->alias('a')->where('delete_time', 'null')
       ->where(function ($query) use($param) {

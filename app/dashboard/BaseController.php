@@ -185,7 +185,7 @@ abstract class BaseController
   /**
    * 获取管理员ID
    * @access protected
-   * @return void
+   * @return int
    */
   protected function getAdminId()
   {

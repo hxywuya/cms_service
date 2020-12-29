@@ -49,15 +49,13 @@ class Admin extends BaseController
     }
 
     $token = Jwt::generate(['id' => $admin['id']]);
+    $res = getMenu($admin['id']);
     unset($admin['id']);
 
-    $menuList = Db::name('admin_menu')->order('order')->select()->toArray();
+    $res['token'] = $token;
+    $res['info'] = $admin;
     
-    $this->success('', [
-      'token' => $token,
-      'info'  => $admin,
-      'menu'  => arrayToTree($menuList),
-    ]);
+    $this->success('', $res);
   }
 
   /**
@@ -75,11 +73,9 @@ class Admin extends BaseController
       $this->error('未知错误');
     }
 
-    $menuList = Db::name('admin_menu')->order('order')->select()->toArray();
+    $res = getMenu($adminId);
+    $res['info'] = $admin;
 
-    $this->success('', [
-      'info'  => $admin,
-      'menu'  => arrayToTree($menuList),
-    ]);
+    $this->success('', $res);
   }
 }

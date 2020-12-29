@@ -35,14 +35,33 @@ function compare_password(string $password, string $passwordInDb)
  * @param string  $children 孩子节点字段名 默认children
  * @return array
  */
-function arrayToTree(array $data, int $parentId = 0, string $children = 'children') {
+function arrayToTree(array $data, int $parentId = 0, string $children = 'children')
+{
   $trees = [];
-	foreach ($data as $key => $item) {
-		if( $item['parent_id'] == $parentId )
-		{
-			$item[$children] = arrayToTree($data, $item['id']);
-			$trees[] = $item;
-		}
-	}
-	return $trees;
+  foreach ($data as $item) {
+    if ($item['parent_id'] == $parentId) {
+      $item[$children] = arrayToTree($data, $item['id']);
+      $trees[] = $item;
+    }
+  }
+  return $trees;
+}
+
+/**
+ * 获取树形结构内的所有叶子节点（底层节点）
+ * @param array   $data     需要转换的数组
+ * @param string  $children 孩子节点字段名 默认children
+ * @return array
+ */
+function getAllLeaf(array $data, string $children = 'children')
+{
+  $leffs = [];
+  foreach ($data as $item) {
+    if (!isset($item[$children]) || count($item[$children]) <= 0) {
+      array_push($leffs, $item);
+    } else {
+      array_push($leffs, ...getAllLeaf($item[$children]));
+    }
+  }
+  return $leffs;
 }

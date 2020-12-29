@@ -294,14 +294,22 @@ class Auth extends BaseController
       $this->error($e->getError());
     }
 
-    
-
     $info = Db::name('role')->where('id', $param['id'])->field('id, name, remarks')->find();
 
     if ($info) {
-      $info['menu_ids'] = Db::name('role_menu')
-        ->where('role_id', $param['id'])
-        ->column('menu_id');
+      $adminMenu = Db::name('role_menu')->alias('rm') // 菜单（规则）角色关联表
+        ->join('admin_menu am','am.id = rm.menu_id') // 菜单（规则）表
+        ->where('rm.role_id', $param['id'])
+        ->order('am.order')->field('am.*')
+        ->distinct(true)->select()->toArray();
+
+      $menuTree = arrayToTree($adminMenu);
+      $leafs = getAllLeaf($menuTree);
+
+      $info['menu_ids'] = [];
+      foreach ($leafs as $leaf) {
+        array_push($info['menu_ids'], $leaf['id']);
+      }
     }
 
 

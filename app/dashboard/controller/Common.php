@@ -19,4 +19,14 @@ class Common extends BaseController
 
     $this->success('', arrayToTree($menuList));
   }
+
+  /**
+   * 获取全部角色数据
+   */
+  public function allRoles()
+  {
+    $roleList = Db::name('role')->where('delete_time', 'null')->select();
+
+    $this->success('', $roleList);
+  }
 }

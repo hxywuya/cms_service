@@ -38,10 +38,17 @@ class Admin extends BaseController
       $this->error($e->getError());
     }
     
-    $admin = Db::name('admin')->where('account', $param['account'])->field('id, password, name, mobile')->find();
+    $admin = Db::name('admin')
+      ->where('account', $param['account'])
+      ->where('delete_time', 'null')
+      ->field('id, password, name, mobile, account, status')->find();
 
     if (!$admin) {
       $this->error('用户不存在');
+    }
+
+    if ($admin['status'] != 1) {
+      $this->error('该账户已被禁用');
     }
 
     if (!compare_password($param['password'], $admin['password'])) {
@@ -65,16 +72,8 @@ class Admin extends BaseController
   {
     $adminId = $this->getAdminId();
 
-    $admin = Db::name('admin')->where('id', $adminId)->field('password, name, mobile')->find();
-
-    
-
-    if (!$admin) {
-      $this->error('未知错误');
-    }
-
     $res = getMenu($adminId);
-    $res['info'] = $admin;
+    $res['info'] = $this->adminInfo;
 
     $this->success('', $res);
   }

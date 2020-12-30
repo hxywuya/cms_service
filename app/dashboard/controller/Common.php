@@ -15,6 +15,7 @@ class Common extends BaseController
    */
   public function menuTree()
   {
+    $this->getAdminId();
     $menuList = Db::name('admin_menu')->order('order')->select()->toArray();
 
     $this->success('', arrayToTree($menuList));
@@ -25,7 +26,8 @@ class Common extends BaseController
    */
   public function allRoles()
   {
-    $roleList = Db::name('role')->where('delete_time', 'null')->select();
+    $this->getAdminId();
+    $roleList = Db::name('role')->where('delete_time', 'null')->where('id', '<>', 1)->select();
 
     $this->success('', $roleList);
   }

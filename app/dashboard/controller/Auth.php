@@ -430,6 +430,10 @@ class Auth extends BaseController
       $this->error($e->getError());
     }
 
+    if ($param['id'] === 1) {
+      $this->error('超级管理员不可被删除');
+    }
+
     Db::name('role')->where('id', $param['id'])->useSoftDelete('delete_time', date('Y-m-d H:i:s'))->delete();
 
     $this->success();

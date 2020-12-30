@@ -8,6 +8,7 @@ use Jwt;
 use think\App;
 use think\exception\ValidateException;
 use think\exception\HttpResponseException;
+use think\facade\Db;
 use think\Response;
 use think\Validate;
 
@@ -53,6 +54,12 @@ abstract class BaseController
   protected $adminId = null;
 
   /**
+   * 管理员
+   * @var int
+   */
+  protected $adminInfo = null;
+
+  /**
    * 构造方法
    * @access public
    * @param  App  $app  应用对象
@@ -72,6 +79,7 @@ abstract class BaseController
   {
   }
 
+  // 初始化用户信息
   protected function initUser()
   {
     $header = $this->request->header();
@@ -91,6 +99,11 @@ abstract class BaseController
     }
 
     $this->adminId = $this->token['data']['id'];
+
+    $this->adminInfo = Db::name('admin')
+      ->where('id', $this->adminId)
+      ->where('delete_time', 'null')
+      ->field('password, name, mobile, account, status')->find();
   }
 
   /**
@@ -190,6 +203,21 @@ abstract class BaseController
   protected function getAdminId()
   {
     if ($this->token && $this->adminId) {
+      
+      if (!$this->adminInfo) {
+        $this->error([
+          'code'  => 10002,
+          'msg'   => '该账户不存在或已被删除',
+        ]);
+      }
+
+      if ($this->adminInfo['status'] !== 1) {
+        $this->error([
+          'code'  => 10002,
+          'msg'   => '该账户已被禁用',
+        ]);
+      }
+
       return $this->adminId;
     }
 

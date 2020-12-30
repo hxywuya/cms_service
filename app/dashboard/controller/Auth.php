@@ -16,6 +16,7 @@ class Auth extends BaseController
    */
   public function account()
   {
+    $this->getAdminId();
     $param = $this->request->param();
     $page = 1;
     $num = 10;
@@ -54,6 +55,7 @@ class Auth extends BaseController
    */
   public function accountInfo()
   {
+    $this->getAdminId();
     $param = $this->request->param();
 
     $rule = [
@@ -83,6 +85,7 @@ class Auth extends BaseController
    */
   public function accountEdit()
   {
+    $this->getAdminId();
     $param = $this->request->param();
 
     $rule = [
@@ -181,6 +184,7 @@ class Auth extends BaseController
    */
   public function accountStatus()
   {
+    $this->getAdminId();
     $param = $this->request->param();
 
     $rule = [
@@ -208,6 +212,7 @@ class Auth extends BaseController
    */
   public function accountDel()
   {
+    $this->getAdminId();
     $param = $this->request->param();
 
     $rule = [
@@ -234,6 +239,7 @@ class Auth extends BaseController
    */
   public function resetAccountPwd()
   {
+    $this->getAdminId();
     $param = $this->request->param();
 
     $rule = [
@@ -258,6 +264,7 @@ class Auth extends BaseController
    */
   public function role()
   {
+    $this->getAdminId();
     $param = $this->request->param();
     $page = 1;
     $num = 10;
@@ -282,6 +289,7 @@ class Auth extends BaseController
    */
   public function roleInfo()
   {
+    $this->getAdminId();
     $param = $this->request->param();
 
     $rule = [
@@ -321,7 +329,15 @@ class Auth extends BaseController
    */
   public function roleEdit()
   {
+    $this->getAdminId();
     $param = $this->request->param();
+
+    if (isset($param['id'])) {
+      if ($param['id'] === 1) {
+        $this->error('超级管理员不可被编辑');
+      }
+      unset($rule['password']);
+    }
 
     $rule = [
       'id'      => 'integer',
@@ -401,6 +417,7 @@ class Auth extends BaseController
    */
   public function roleDel()
   {
+    $this->getAdminId();
     $param = $this->request->param();
 
     $rule = [

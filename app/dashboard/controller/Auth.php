@@ -28,7 +28,7 @@ class Auth extends BaseController
       $num = $param['num'];
     }
     
-    $list = Db::name('admin')->alias('a')->where('delete_time', 'null')
+    $list = Db::name('admin')->where('delete_time', 'null')
       ->where(function ($query) use($param) {
         if (isset($param['search'])) {
           $query->where('name', 'like', "%${param['search']}%")

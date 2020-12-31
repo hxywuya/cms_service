@@ -83,10 +83,10 @@ abstract class BaseController
   protected function initUser()
   {
     $header = $this->request->header();
-    if (!isset($header['authorization'])) {
+    if (!isset($header['authorization']) || !$header['authorization']) {
       return;
     }
-    $this->token = Jwt::parse(($header['authorization']));
+    $this->token = Jwt::parse($header['authorization']);
 
     $now = time();
 

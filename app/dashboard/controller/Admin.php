@@ -55,6 +55,9 @@ class Admin extends BaseController
       $this->error('密码不正确');
     }
 
+    $adminName = $admin['name'] ? $admin['name'] : $admin['account'];
+    writeOperationLog($admin['id'], "${adminName}登录了系统", 2); // 写入日志
+
     $token = Jwt::generate(['id' => $admin['id']]);
     $res = getMenu($admin['id']);
     unset($admin['id']);

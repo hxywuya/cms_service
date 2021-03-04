@@ -175,6 +175,14 @@ class Auth extends BaseController
       // 回滚事务
       Db::rollback();
     }
+
+    // 写入日志
+    if (isset($param['id'])) {
+      $admin = Db::name('admin')->where('id', $param['id'])->find();
+      writeOperationLog($this->adminId, " 修改了账号：{$admin['account']}", 3, json_encode($param));
+    } else {
+      writeOperationLog($this->adminId, " 新增了账号：${param['account']}", 3, json_encode($param));
+    }
     
     $this->success();
   }
@@ -204,6 +212,11 @@ class Auth extends BaseController
 
     Db::name('admin')->where('id', $param['id'])->update(['status' => $param['status']]);
 
+    // 写入日志
+    $admin = Db::name('admin')->where('id', $param['id'])->find();
+    $status = $param['status'] === 1 ? '启用' : '禁用';
+    writeOperationLog($this->adminId, " ${status}了账号：{$admin['account']}", 3, json_encode($param));
+
     $this->success();
   }
 
@@ -231,6 +244,10 @@ class Auth extends BaseController
 
     Db::name('admin')->where('id', $param['id'])->useSoftDelete('delete_time', date('Y-m-d H:i:s'))->delete();
 
+    // 写入日志
+    $admin = Db::name('admin')->where('id', $param['id'])->find();
+    writeOperationLog($this->adminId, " 删除了账号：{$admin['account']}", 3, json_encode($param));
+
     $this->success();
   }
 
@@ -255,6 +272,11 @@ class Auth extends BaseController
     }
 
     Db::name('admin')->where('id', $param['id'])->update(['password' => password($param['password'])]);
+
+    // 写入日志
+    $admin = Db::name('admin')->where('id', $param['id'])->find();
+    unset($param['password']);
+    writeOperationLog($this->adminId, " 重置了账号：{$admin['account']} 的密码", 3, json_encode($param));
 
     $this->success();
   }
@@ -332,19 +354,19 @@ class Auth extends BaseController
     $this->getAdminId();
     $param = $this->request->param();
 
-    if (isset($param['id'])) {
-      if ($param['id'] === 1) {
-        $this->error('超级管理员不可被编辑');
-      }
-      unset($rule['password']);
-    }
-
     $rule = [
       'id'      => 'integer',
       'name'    => 'require|length:4,32',
       'remarks' => 'max:255',
       'menuIds' => 'array',
     ];
+
+    if (isset($param['id'])) {
+      if ($param['id'] === 1) {
+        $this->error('超级管理员不可被编辑');
+      }
+      unset($rule['password']);
+    }
 
     $message = [
       'name.require'  => '请填写角色名称',
@@ -408,6 +430,14 @@ class Auth extends BaseController
       // 回滚事务
       Db::rollback();
     }
+
+    // 写入日志
+    if (isset($param['id'])) {
+      $role = Db::name('role')->where('id', $param['id'])->find();
+      writeOperationLog($this->adminId, " 修改了角色：{$role['name']}", 3, json_encode($param));
+    } else {
+      writeOperationLog($this->adminId, " 新增了角色：${param['name']}", 3, json_encode($param));
+    }
     
     $this->success();
   }
@@ -436,6 +466,54 @@ class Auth extends BaseController
 
     Db::name('role')->where('id', $param['id'])->useSoftDelete('delete_time', date('Y-m-d H:i:s'))->delete();
 
+    // 写入日志
+    $role = Db::name('role')->where('id', $param['id'])->find();
+    writeOperationLog($this->adminId, "删除了角色：{$role['name']}", 3, json_encode($param));
+
     $this->success();
+  }
+
+  /**
+   * 操作记录列表
+   */
+  public function operationLog()
+  {
+    $this->getAdminId();
+    $param = $this->request->param();
+    $page = 1;
+    $num = 10;
+    if (isset($param['page'])) {
+      $page = $param['page'];
+    }
+
+    if (isset($param['num'])) {
+      $num = $param['num'];
+    }
+
+    $where = [];
+
+    if (isset($param['search'])) {
+      $where[] = ['log.content', 'like', "%${param['search']}%"];
+    }
+
+    if (isset($param['dateRange'])) {
+      $where[] = ['log.create_time', 'between time', [$param['dateRange'][0] . '00:00:00', $param['dateRange'][1] . '23:59:59']];
+    }
+
+    if (isset($param['moduleId'])) {
+      $where[] = ['log.module_id', '=', $param['moduleId']];
+    }
+    
+    $list = Db::name('operation_log')->alias('log')
+      ->join('admin admin','admin.id = log.user_id')
+      ->join('operation_module module','module.id = log.module_id')
+      ->field('log.id, log.content, log.ip, log.create_time, admin.account, admin.name, module.name as module_name')
+      ->where($where)
+      ->order('id desc')->paginate([
+        'list_rows' => $num,
+        'page'      => $page,
+      ]);
+
+    $this->success('', $list);
   }
 }

@@ -4,9 +4,8 @@
 use think\facade\Db;
 
 /**
- * 密码加密
- * @param int $pw       要加密的原始密码
- * @param string $authCode 加密字符串
+ * 获取指定账号的菜单及权限
+ * @param int $adminId  管理员ID
  * @return string
  */
 function getMenu(int $adminId)
@@ -40,4 +39,40 @@ function getMenu(int $adminId)
     'menu'  => arrayToTree($menuList),
     'auth'  => $authList,
   ];
+}
+
+/**
+ * 写入日志
+ * @param int $adminId    管理员ID
+ * @param string $content 操作内容
+ * @param int $module     操作模块 1为其他
+ * @param string $rawData 操作原始数据
+ * @return string
+ */
+function writeOperationLog(int $adminId, string $content, int $module = 1, string $rawData = '')
+{
+  $data = [
+    'user_id'     => $adminId,
+    'module_id'   => $module,
+    'content'     => $content,
+    'ip'          => getIP(),
+    'create_time' => date('Y-m-d H:i:s'),
+    'raw_data'    => $rawData
+  ];
+
+  Db::name('operation_log')->insert($data);
+}
+
+/**
+ * 获取IP地址
+ * @return string
+ */
+function getIP(){
+  $forwarded = request()->header("x-forwarded-for");
+  if($forwarded){
+      $ip = explode(',',$forwarded)[0];
+  }else{
+      $ip = request()->ip();
+  }
+  return $ip;
 }

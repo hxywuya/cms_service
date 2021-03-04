@@ -31,4 +31,15 @@ class Common extends BaseController
 
     $this->success('', $roleList);
   }
+
+  /**
+   * 获取全部操作模块
+   */
+  public function operationModule()
+  {
+    $this->getAdminId();
+    $operationModule = Db::name('operation_module')->select();
+
+    $this->success('', $operationModule);
+  }
 }

@@ -104,6 +104,10 @@ abstract class BaseController
       ->where('id', $this->adminId)
       ->where('delete_time', 'null')
       ->field('password, name, mobile, account, status')->find();
+
+    if (!$this->adminInfo['name']) {
+      $this->adminInfo['name'] = $this->adminInfo['account'];
+    }
   }
 
   /**
